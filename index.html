@@ -16,24 +16,24 @@ nav a,.btn{background:var(--red);color:#fff;border:0;border-radius:8px;padding:8
 nav a{background:#2b2b2b;padding:6px 10px;font-size:13px}nav a.on{background:var(--red)}
 .btn.o{background:transparent;color:var(--ink);border:1px solid var(--line)}.btn.g{background:#2e7d32}.btn.k{background:#222}
 main{max-width:980px;margin:0 auto;padding:14px}
-/* Christmas hero: slow Aurora Borealis red/green flow */
-.hero{position:relative;overflow:hidden;background:#081b18;color:#f7f0e1;border-radius:14px;padding:20px;margin-bottom:14px;isolation:isolate}
-.hero::before,.hero::after{content:"";position:absolute;inset:-65%;z-index:-1;pointer-events:none;filter:blur(28px);transform-origin:50% 50%;will-change:transform,background-position}
-.hero::before{background:
- radial-gradient(ellipse 42% 24% at 18% 52%,rgba(255,32,70,.78) 0%,rgba(196,18,55,.42) 34%,transparent 72%),
- radial-gradient(ellipse 46% 26% at 76% 44%,rgba(35,255,150,.72) 0%,rgba(18,150,100,.38) 35%,transparent 74%),
- radial-gradient(ellipse 32% 20% at 52% 72%,rgba(255,70,100,.34) 0%,transparent 70%);
-animation:auroraRedGreen 15s ease-in-out infinite alternate}
-.hero::after{background:
- radial-gradient(ellipse 30% 18% at 62% 24%,rgba(105,255,195,.52) 0%,transparent 72%),
- radial-gradient(ellipse 34% 20% at 34% 78%,rgba(255,25,75,.48) 0%,transparent 72%),
- linear-gradient(112deg,transparent 20%,rgba(100,255,200,.12) 38%,transparent 52%,rgba(255,50,90,.12) 68%,transparent 82%);
-mix-blend-mode:screen;filter:blur(20px);animation:auroraVeil 19s ease-in-out infinite alternate-reverse}
+/* Christmas hero: vivid red/green Aurora Borealis, slow natural flow */
+.hero{position:relative;overflow:hidden;isolation:isolate;background:linear-gradient(160deg,#06140f 0%,#10070b 100%);color:#f7f0e1;border-radius:14px;padding:20px;margin-bottom:14px}
+.hero::before,.hero::after{content:"";position:absolute;z-index:-1;pointer-events:none;will-change:transform}
+.hero::before{inset:-45%;filter:blur(22px);background:
+ radial-gradient(ellipse 52% 34% at 18% 58%,rgba(255,38,84,.92) 0%,rgba(200,20,60,.5) 38%,transparent 72%),
+ radial-gradient(ellipse 58% 36% at 82% 40%,rgba(40,255,165,.88) 0%,rgba(20,170,110,.5) 38%,transparent 72%),
+ radial-gradient(ellipse 44% 26% at 52% 88%,rgba(255,70,100,.55) 0%,transparent 70%),
+ radial-gradient(ellipse 40% 24% at 40% 12%,rgba(90,255,200,.5) 0%,transparent 70%);
+ animation:auroraA 16s ease-in-out infinite alternate}
+.hero::after{inset:-30%;mix-blend-mode:screen;filter:blur(14px);opacity:.9;background:
+ linear-gradient(98deg,transparent 12%,rgba(90,255,195,.42) 26%,transparent 40%,rgba(255,70,110,.38) 56%,transparent 70%,rgba(90,255,195,.3) 84%,transparent 96%);
+ background-size:220% 100%;animation:auroraB 22s ease-in-out infinite alternate,auroraC 11s ease-in-out infinite alternate}
 .hero>*{position:relative;z-index:1}
-@keyframes auroraRedGreen{0%{transform:translate3d(-7%,3%,0) rotate(-4deg) scale(1.08)}25%{transform:translate3d(2%,-4%,0) rotate(2deg) scale(1.14)}50%{transform:translate3d(9%,5%,0) rotate(5deg) scale(1.1)}75%{transform:translate3d(-3%,-2%,0) rotate(-2deg) scale(1.16)}100%{transform:translate3d(-10%,6%,0) rotate(-5deg) scale(1.08)}}
-@keyframes auroraVeil{0%{transform:translate3d(8%,-5%,0) rotate(5deg) scale(1.12)}33%{transform:translate3d(-4%,4%,0) rotate(-3deg) scale(1.18)}66%{transform:translate3d(-9%,-2%,0) rotate(-6deg) scale(1.1)}100%{transform:translate3d(5%,7%,0) rotate(4deg) scale(1.2)}}
+.hero h1,.hero p{text-shadow:0 1px 10px rgba(0,0,0,.55)}
+@keyframes auroraA{0%{transform:translate3d(-9%,4%,0) rotate(-6deg) scale(1.05)}33%{transform:translate3d(6%,-6%,0) rotate(3deg) scale(1.16)}66%{transform:translate3d(11%,6%,0) rotate(7deg) scale(1.08)}100%{transform:translate3d(-12%,-3%,0) rotate(-4deg) scale(1.18)}}
+@keyframes auroraB{0%{background-position:0% 0}100%{background-position:100% 0}}
+@keyframes auroraC{0%{transform:translate3d(-4%,2%,0) skewX(-6deg) scale(1.04)}100%{transform:translate3d(5%,-3%,0) skewX(7deg) scale(1.12)}}
 @media (prefers-reduced-motion:reduce){.hero::before,.hero::after{animation:none}}
-
 .hero h1{margin:0 0 4px;font-size:24px}.hero p{margin:4px 0;color:#e8d9bd}
 .tag{display:inline-block;background:var(--red);color:#fff;border-radius:99px;padding:2px 10px;font-size:12px}
 .cats{display:flex;gap:6px;overflow-x:auto;margin:10px 0}.cats button{white-space:nowrap}
@@ -112,7 +112,7 @@ function baht(n){return "฿"+Number(n).toLocaleString("th-TH")}
 function toast(t){var d=document.createElement("div");d.className="toast";d.textContent=t;document.body.appendChild(d);setTimeout(function(){d.remove()},2200)}
 /* ---- store: shared db when available, in-memory fallback ---- */
 function put(col,id,data){S[col]=S[col]||{};S[col][id]=Object.assign({},S[col][id]||{},data);render();
- if(db){db.collection(col).doc(id).set(S[col][id]).catch(function(){toast("บันทึกไม่สำเร็จ (สิทธิ์เขียนข้อมูล)")})}}
+ if(db){db.collection(col).doc(id).set(S[col][id]).catch(function(e){toast("บันทึกไม่สำเร็จ: "+((e&&e.message)||"ไม่ทราบสาเหตุ"))})}}
 function sub(col){db.collection(col).onSnapshot(function(s){var o={};s.docs.forEach(function(d){o[d.id]=d.data()});S[col]=o;render()},function(){})}
 function route(){var hs=location.hash.replace("#","");
  if(/^T\d\d$/i.test(hs)){tableId=hs.toUpperCase();view="menu"}
@@ -316,7 +316,7 @@ for(i=0;i<8;i++)nz(t+(i%2?Math.floor(i/2)+SW:i/2)*B+j()/2,.05,(i%2?.05:.08)*(.7+
 for(i=0;i<16;i++)nz(t+R()*4*B,.004,.03+R()*.05,"highpass",3000)}
 musTick=function(){if(!_ac)return;while(MUS.next<_ac.currentTime+3){lofiBar(MUS.next,_bar);MUS.next+=BEATL*4;_bar++}};
 /* ---- staff-only access ---- */
-nav=function(){var cu=["home","menu","cart","orders"].indexOf(view)>=0;document.body.classList.toggle("cust",cu);var items=cu?[["kitchen","พนักงาน"]]:(user?[["home","หน้าร้าน"],["kitchen","ครัว"],["pos","POS"]].concat(user.role==="admin"?[["admin","แอดมิน"]]:[]):[["home","หน้าร้าน"]]);var s=items.map(function(i){return '<a href="#'+i[0]+'" class="'+(view===i[0]?"on":"")+'">'+i[1]+'</a>'}).join("");if(!cu&&user)s+='<a href="#" class="'+(SIM.on?"on":"")+'" onclick="return simTg()">จำลองออเดอร์: '+(SIM.on?"เปิด":"ปิด")+'</a><a href="#" onclick="return simClear()">ล้างข้อมูลจำลอง</a><a href="#" onclick="return outStaff()">ออกจากระบบ</a>';$("#nav").innerHTML=s+fxBtns();$("#sub").textContent=(SIM.on&&user)?"โหมดจำลองกำลังทำงาน":(tableId?"โต๊ะ "+tableId+" · สั่งอาหารผ่าน QR":"ราเมงสไตล์ญี่ปุ่นสมัยใหม่");bnav()};
+nav=function(){var cu=["home","menu","cart","orders"].indexOf(view)>=0;document.body.classList.toggle("cust",cu);var items=cu?[["kitchen","พนักงาน"]]:(user?[["home","หน้าร้าน"],["kitchen","ครัว"],["pos","POS"]].concat(user.role==="admin"?[["admin","แอดมิน"]]:[]):[["home","หน้าร้าน"]]);var s=items.map(function(i){return '<a href="#'+i[0]+'" class="'+(view===i[0]?"on":"")+'">'+i[1]+'</a>'}).join("");if(!cu&&user)s+='<a href="#" class="'+(SIM.on?"on":"")+'" onclick="return simTg()">จำลองออเดอร์: '+(SIM.on?"เปิด":"ปิด")+'</a><a href="#" onclick="return simClear()">ล้างข้อมูลจำลอง</a><a href="#" onclick="return outStaff()">ออกจากระบบ</a>';$("#nav").innerHTML=s+fxBtns();$("#sub").textContent=(user&&!cu?"ฐานข้อมูล: "+dbLabel()+" · ":"")+((SIM.on&&user)?"โหมดจำลองกำลังทำงาน":(tableId?"โต๊ะ "+tableId+" · สั่งอาหารผ่าน QR":"ราเมงสไตล์ญี่ปุ่นสมัยใหม่"));bnav()};
 function outStaff(){if(SIM.on)simTg();user=null;location.hash="home";view="home";render();return false}
 var _adm=adminV;adminV=function(){if(user&&user.role!=="admin")return '<div class="card">หน้านี้สำหรับผู้ดูแลระบบ (admin) เท่านั้น</div>';return _adm()};
 /* ---- stop music when leaving storefront / page hidden ---- */
@@ -334,6 +334,7 @@ _sync(x,y);if(nm==="SELECT"&&document.activeElement!==x){var si=-1;[].forEach.ca
 while(an.length>bn.length)a.removeChild(a.lastChild)}
 function patchEl(el){var d=Object.getOwnPropertyDescriptor(Element.prototype,"innerHTML");Object.defineProperty(el,"innerHTML",{configurable:true,get:function(){return d.get.call(this)},set:function(v){if(v===this.__l)return;this.__l=v;var t=document.createElement("template");t.innerHTML=v;if(this.firstChild)_sync(this,t.content);else d.set.call(this,v)}})}
 patchEl(app);patchEl($("#nav"));
+function dbLabel(){var s=window.HARU_DB;if(!s)return db?"ปกติ":"ออฟไลน์";if(s.state==="off")return"ออฟไลน์ (ยังไม่ได้ตั้งค่า config.js)";if(s.state==="ok")return"เชื่อมต่อแล้ว";if(s.state==="err")return"ผิดพลาด - "+s.msg;return"กำลังเชื่อมต่อ..."}
 /* ---- boot ---- */
 route();
 if(window.claude&&claude.use){claude.use("db").then(function(d){if(!d)return;db=d;["orders","calls","avail","stock","exp","menu","cfg","staff"].forEach(sub);var t=setTimeout(function(){},10000);clearTimeout(t)}).catch(function(){})}
