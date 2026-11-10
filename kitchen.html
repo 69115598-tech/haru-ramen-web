@@ -1,0 +1,282 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>Haru Ramen - Kitchen</title>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+<style>
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  font-family: Arial, sans-serif;
+  background: #0d0d0d;
+  color: white;
+  min-height: 100vh;
+}
+
+header {
+  padding: 20px;
+  background: #151515;
+  border-bottom: 1px solid #333;
+}
+
+h1 {
+  margin: 0;
+}
+
+#orders {
+  padding: 20px;
+  display: grid;
+  gap: 16px;
+}
+
+.order {
+  background: #1b1b1b;
+  border: 1px solid #444;
+  border-radius: 18px;
+  padding: 20px;
+}
+
+.order.new {
+  border: 2px solid #e51b3e;
+  box-shadow: 0 0 20px rgba(229, 27, 62, 0.3);
+}
+
+.order-header {
+  display: flex;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.order-number {
+  font-size: 24px;
+  font-weight: bold;
+}
+
+.status {
+  padding: 6px 12px;
+  border-radius: 20px;
+  background: #e51b3e;
+}
+
+.item {
+  padding: 8px 0;
+  border-bottom: 1px solid #333;
+}
+
+.total {
+  margin-top: 15px;
+  font-size: 20px;
+  font-weight: bold;
+}
+
+button {
+  margin-top: 15px;
+  padding: 12px 18px;
+  border: 0;
+  border-radius: 12px;
+  font-size: 16px;
+  cursor: pointer;
+}
+
+.accept {
+  background: #18a558;
+  color: white;
+}
+
+.ready {
+  background: #e8b923;
+  color: black;
+}
+
+.empty {
+  text-align: center;
+  opacity: .6;
+  padding: 50px;
+}
+</style>
+</head>
+
+<body>
+
+<header>
+  <h1>🍜 Haru Ramen — ครัว</h1>
+  <div id="connection">กำลังเชื่อมต่อ...</div>
+</header>
+
+<main id="orders">
+  <div class="empty">กำลังโหลดออเดอร์...</div>
+</main>
+
+<script src="config.js"></script>
+
+<script>
+
+const supabaseClient = window.supabase.createClient(
+  SUPABASE_URL,
+  SUPABASE_ANON_KEY
+);
+
+const ordersEl = document.getElementById("orders");
+
+
+async function loadOrders() {
+
+  const { data, error } = await supabaseClient
+    .from("orders")
+    .select("*")
+    .order("created_at", { ascending: false });
+
+  if (error) {
+    ordersEl.innerHTML =
+      `<div class="empty">โหลดออเดอร์ไม่ได้: ${error.message}</div>`;
+    return;
+  }
+
+  renderOrders(data || []);
+}
+
+
+function renderOrders(orders) {
+
+  if (!orders.length) {
+    ordersEl.innerHTML =
+      `<div class="empty">ยังไม่มีออเดอร์ 🍜</div>`;
+    return;
+  }
+
+  ordersEl.innerHTML = orders.map(order => {
+
+    const items = Array.isArray(order.items)
+      ? order.items
+      : [];
+
+    const itemsHTML = items.map(item => {
+
+      return `
+        <div class="item">
+          ${item.name || "รายการอาหาร"}
+          × ${item.quantity || 1}
+        </div>
+      `;
+
+    }).join("");
+
+    let button = "";
+
+    if (order.status === "new") {
+
+      button = `
+        <button
+          class="accept"
+          onclick="updateStatus('${order.id}', 'accepted')">
+          รับออเดอร์
+        </button>
+      `;
+
+    } else if (order.status === "accepted") {
+
+      button = `
+        <button
+          class="ready"
+          onclick="updateStatus('${order.id}', 'ready')">
+          อาหารพร้อม
+        </button>
+      `;
+
+    }
+
+    return `
+
+      <div class="order ${order.status}">
+
+        <div class="order-header">
+
+          <div class="order-number">
+            #${order.order_number}
+          </div>
+
+          <div class="status">
+            ${order.status}
+          </div>
+
+        </div>
+
+        <div style="margin-top:15px">
+          โต๊ะ: ${order.table_no || "-"}
+        </div>
+
+        <div style="margin-top:15px">
+          ${itemsHTML}
+        </div>
+
+        <div class="total">
+          รวม ฿${Number(order.total || 0).toFixed(2)}
+        </div>
+
+        ${button}
+
+      </div>
+
+    `;
+
+  }).join("");
+}
+
+
+async function updateStatus(id, status) {
+
+  const { error } = await supabaseClient
+    .from("orders")
+    .update({
+      status: status,
+      updated_at: new Date().toISOString()
+    })
+    .eq("id", id);
+
+  if (error) {
+    alert("เปลี่ยนสถานะไม่ได้: " + error.message);
+  }
+}
+
+
+supabaseClient
+  .channel("kitchen-orders")
+  .on(
+    "postgres_changes",
+    {
+      event: "*",
+      schema: "public",
+      table: "orders"
+    },
+    payload => {
+
+      console.log("ORDER UPDATE", payload);
+
+      loadOrders();
+
+    }
+  )
+  .subscribe(status => {
+
+    document.getElementById("connection").textContent =
+      status === "SUBSCRIBED"
+        ? "🟢 เชื่อมต่อระบบออเดอร์แล้ว"
+        : "🟡 กำลังเชื่อมต่อ...";
+
+  });
+
+
+loadOrders();
+
+</script>
+
+</body>
+</html>
